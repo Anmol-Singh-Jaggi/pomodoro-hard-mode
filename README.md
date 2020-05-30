@@ -40,3 +40,4 @@ To make it run automatically at startup:
   - If native screen state change notification observer API is missing, then create one using timer loops.
   - Find out equivalent commands for playing sound, turning off screen, displaying dialog.
 - Get code reviewed.
+- Make it configurable to turn off optional features like playing sound, turning screen off etc.
