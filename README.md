@@ -1,5 +1,7 @@
 # pomodoro-hard-mode
-A pomodoro timer that is hard to ignore.
+A [pomodoro](https://en.wikipedia.org/wiki/Pomodoro_Technique) timer that is hard to ignore.  
+Different from other gazillion timers because it will force you to take a break, no matter you like it or not.  
+Useful for stubborn/stupid people like me who ignore normal soft timers despite being suffering from neck/back/eyes strain.
 
 ## Intro
 
