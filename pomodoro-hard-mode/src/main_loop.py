@@ -9,6 +9,8 @@ logging.basicConfig(format='%(levelname)s:%(process)d:%(asctime)s:::%(message)s'
 
 import setproctitle
 
+from statusbar_utils import display_status_bar
+
 
 dialog_message = "Break!!"
 dialog_buttons = ["OK", "Snooze", "Finish"]
@@ -30,7 +32,11 @@ def pkill(process_name):
 
 
 def wait_for_mins(mins):
+    statusbar_process = mp.Process(name='pomodoro_statusbar', target=display_status_bar, args = (mins,))
+    statusbar_process.start()
     wait_for_secs(mins*60)
+    statusbar_process.terminate()
+    statusbar_process.join()
 
 
 def wait_for_secs(secs):

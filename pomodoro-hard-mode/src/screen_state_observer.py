@@ -18,6 +18,7 @@ class ScreenStateObserver(AppKit.NSObject):
         pkill('pomodoro_main_loop')
         pkill('pomodoro_make_sound')
         pkill('pomodoro_screen_off')
+        pkill('pomodoro_statusbar')
 
     def screenOnHandler_(self, _):
         logging.debug('Starting main loop again')

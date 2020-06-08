@@ -10,6 +10,8 @@ Useful for stubborn/stupid people like me who ignore normal soft timers despite 
   - Display a dialog box which is hard to ignore/hide/minimize.
   - Play a sound on repeat.
   - Turn screen off.
+  - Display remaining time (in minutes) on the statusbar.
+![statusbar-screenshot](pomodoro-hard-mode/static/screenshots/screenshot-statusbar.png)  
 - It can also pause itself while the screen is locked, to prevent the dialog and sound while the laptop is locked and unattended.
 - You are supposed to work without distractions for 25 minutes and then take a break for 5 minutes.
 - Note that when the screen is unlocked, the timer starts afresh from beginning, assuming that you would have already taken a break while you're gone.
@@ -19,20 +21,21 @@ Useful for stubborn/stupid people like me who ignore normal soft timers despite 
 - Right now only supported on Mac.
 - **Tip**: Snooze can be used as both: To extend the current working session for 5 minutes, or to just measure the 5-minute break.
 
-![dialog-screenshot](pomodoro-hard-mode/static/screenshot-pomodoro.png)
+![dialog-screenshot](pomodoro-hard-mode/static/screenshots/screenshot-pomodoro.png)
 
 ## Setup
 
-- Install [setproctitle](https://pypi.org/project/setproctitle/):  
-  `>> python3 -m pip install setproctitle`.
+- There are 2 external dependencies: [setproctitle](https://pypi.org/project/setproctitle/) and [rumps](https://github.com/jaredks/rumps).  
+  Install both using pip:  
+  `>> python3 -m pip install setproctitle rumps`.
 - Execute it manually and run in background:
   ```
   cd src
   nohup python3 pomodoro.py &!
   ```
 - To check if its running, execute `ps -A | grep "pomodoro" | grep -v grep`.  
-  You should see 3 processes.  
-![grep-screenshot](pomodoro-hard-mode/static/screenshot-grep.png)
+  You should see 4 processes.  
+![grep-screenshot](pomodoro-hard-mode/static/screenshots/screenshot-grep.png)
 
 - To make it run automatically at startup:
   - Modify the path on line 10 and 19 in the `.plist` file to point to the `pomodoro.py` script and its parent directory respectively.
