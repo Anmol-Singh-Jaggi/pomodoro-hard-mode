@@ -25,9 +25,8 @@ Useful for stubborn/stupid people like me who ignore normal soft timers despite 
 
 ## Setup
 
-- There are 2 external dependencies: [setproctitle](https://pypi.org/project/setproctitle/) and [rumps](https://github.com/jaredks/rumps).  
-  Install both using pip:  
-  `>> python3 -m pip install setproctitle rumps`.
+- Install dependencies:  
+  `>> python3 -m pip install setproctitle rumps pyobjc`
 - Execute it manually and run in background:
   ```
   cd src
