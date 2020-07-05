@@ -10,7 +10,7 @@ logging.basicConfig(format='%(levelname)s:%(process)d:%(asctime)s:::%(message)s'
 import setproctitle
 
 from screen_state_observer import start_screen_state_observer
-from main_loop import main_loop
+from main_loop import start_main_loop
 
 
 def main():
@@ -24,7 +24,7 @@ def main():
     screen_state_observer_process = mp.Process(name='pomodoro_screen_state_observer', target=start_screen_state_observer)
     screen_state_observer_process.start()
 
-    main_loop_process = mp.Process(name='pomodoro_main_loop', target=main_loop)
+    main_loop_process = mp.Process(name='pomodoro_main_loop', target=start_main_loop)
     main_loop_process.start()
 
     # Bug: Root process not exiting, dont know why!

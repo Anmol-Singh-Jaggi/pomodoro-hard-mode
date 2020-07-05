@@ -10,16 +10,13 @@ from PyObjCTools import AppHelper
 
 import setproctitle
 
-from main_loop import pkill, main_loop
+from main_loop import start_main_loop
+from common_utils import kill_main_loop_recursive, get_process_id, pkill
 
 
 class ScreenStateObserver(AppKit.NSObject):
     def screenOffHandler_(self, _):
-        logging.debug('Killing main loop and its children')
-        pkill('pomodoro_main_loop')
-        pkill('pomodoro_make_sound')
-        pkill('pomodoro_screen_off')
-        pkill('pomodoro_statusbar')
+        kill_main_loop_recursive()
 
     def screenOnHandler_(self, _):
         # Semaphore is required because this method is sometimes being called
@@ -27,14 +24,14 @@ class ScreenStateObserver(AppKit.NSObject):
         # This can cause 2 main loop processes to start at the same time due to
         # race conditions.
         # Dont know why this is happening; seems like a bug in OSX libraries.
+        pkill('pomodoro_sound_post_snooze', True)
         with self.screen_on_handler_semaphore:
             logging.debug('Starting main loop again')
-            cmd = "ps -ef | grep 'pomodoro_main_loop' | grep -v grep | awk '{print $2}'"
-            res = subprocess.run(cmd, shell=True, capture_output=True)
-            if len(res.stdout) > 0:
-                logging.error('Main loop already running!!')
+            main_loop_process_id = get_process_id('pomodoro_main_loop', True)
+            if main_loop_process_id:
+                logging.error('Main loop already running with process id "{}"'.format(main_loop_process_id))
                 return
-            main_loop_process = mp.Process(name='pomodoro_main_loop', target=main_loop)
+            main_loop_process = mp.Process(name='pomodoro_main_loop', target=start_main_loop)
             main_loop_process.start()
 
 

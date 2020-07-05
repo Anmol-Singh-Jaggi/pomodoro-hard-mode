@@ -10,7 +10,7 @@ logging.basicConfig(format='%(levelname)s:%(process)d:%(asctime)s:::%(message)s'
 import setproctitle
 
 from statusbar_utils import display_status_bar
-
+from common_utils import kill_all
 
 dialog_message = "Break!!"
 dialog_buttons = ["OK", "Snooze", "Finish"]
@@ -19,16 +19,12 @@ dialog_button_default = 2 # Snooze
 cmd_dialog = "osascript -e 'tell app \"System Events\" to display dialog \"{}\" buttons {{\"{}\", \"{}\", \"{}\"}} default button {}'"
 cmd_dialog = cmd_dialog.format(dialog_message, *dialog_buttons, dialog_button_default)
 cmd_sound = "afplay /System/Library/Sounds/Tink.aiff"
+cmd_sound_post_snooze = "afplay /System/Library/Sounds/Glass.aiff"
 cmd_screen = "pmset displaysleepnow"
 
 MAIN_LOOP_MINS=25
 SNOOZE_MINS=5
-SCREEN_OFF_SECONDS=15
-
-
-def pkill(process_name):
-    cmd = "pkill " + process_name
-    subprocess.run(cmd, shell=True)
+SCREEN_OFF_SECONDS=10
 
 
 def wait_for_mins(mins):
@@ -63,6 +59,16 @@ def command_screen_off():
     setproctitle.setproctitle(mp.current_process().name)
     wait_for_secs(SCREEN_OFF_SECONDS)
     subprocess.run(cmd_screen, shell=True)
+    command_sound_post_snooze_process = mp.Process(name='pomodoro_sound_post_snooze', target=command_sound_post_snooze)
+    command_sound_post_snooze_process.start()
+
+
+def command_sound_post_snooze():
+    setproctitle.setproctitle(mp.current_process().name)
+    wait_for_secs(SNOOZE_MINS*60)
+    for i in range(10):
+        subprocess.run(cmd_sound_post_snooze, shell=True)
+        wait_for_secs(1)  
 
 
 def process_result(res):
@@ -71,7 +77,7 @@ def process_result(res):
         if "Finish" in stdout:
             logging.info("Exiting!")
             os.kill(os.getppid(), signal.SIGTERM)
-            pkill("pomodoro")
+            kill_all()
             exit(0)
         if "OK" in stdout:
             wait_time_mins = MAIN_LOOP_MINS
@@ -84,7 +90,7 @@ def process_result(res):
     return wait_time_mins
 
 
-def main_loop():
+def start_main_loop():
     setproctitle.setproctitle(mp.current_process().name)
     logging.debug('Main loop process started.')
     wait_time_mins = MAIN_LOOP_MINS
