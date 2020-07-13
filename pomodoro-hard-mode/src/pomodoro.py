@@ -4,8 +4,9 @@ Run in background:
 nohup python3 pomodoro.py &!
 '''
 import multiprocessing as mp
+from threading import Event
 import logging
-logging.basicConfig(format='%(levelname)s:%(process)d:%(asctime)s:::%(message)s', datefmt='%d-%b-%y_%H:%M:%S', level=logging.DEBUG)
+logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d:%H:%M:%S', level=logging.DEBUG)
 
 import setproctitle
 
@@ -21,14 +22,17 @@ def main():
 
     logging.info('Starting the root process...')
 
-    screen_state_observer_process = mp.Process(name='pomodoro_screen_state_observer', target=start_screen_state_observer)
+    interprocess_dict = mp.Manager().dict()
+
+    screen_state_observer_process = mp.Process(name='pomodoro_screen_state_observer', target=start_screen_state_observer, args=(interprocess_dict,))
     screen_state_observer_process.start()
 
-    main_loop_process = mp.Process(name='pomodoro_main_loop', target=start_main_loop)
+    main_loop_process = mp.Process(name='pomodoro_main_loop', target=start_main_loop, args=(interprocess_dict,))
     main_loop_process.start()
 
-    # Bug: Root process not exiting, dont know why!
-    exit(0)
+    # Keep the process running forever to avoid garbage collection of mp.Manager()
+    # One of those few instances where we have to be aware of garbage collection in Python.
+    Event().wait()
 
 
 if __name__ == '__main__':

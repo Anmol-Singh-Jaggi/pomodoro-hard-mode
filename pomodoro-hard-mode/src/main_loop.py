@@ -10,7 +10,9 @@ logging.basicConfig(format='%(levelname)s:%(process)d:%(asctime)s:::%(message)s'
 import setproctitle
 
 from statusbar_utils import display_status_bar
-from common_utils import kill_all
+from common_utils import kill_all, exec_command
+from volume_utils import store_current_volume, restore_volume, set_volume_to_max
+
 
 dialog_message = "Break!!"
 dialog_buttons = ["OK", "Snooze", "Finish"]
@@ -51,24 +53,32 @@ def command_make_sound():
     setproctitle.setproctitle(mp.current_process().name)
     for interval in get_decreasing_seq():
         # Start softly but go hard later.
-        subprocess.run(cmd_sound, shell=True)
+        exec_command(cmd_sound)
         wait_for_secs(interval)
 
 
-def command_screen_off():
-    setproctitle.setproctitle(mp.current_process().name)
-    wait_for_secs(SCREEN_OFF_SECONDS)
-    subprocess.run(cmd_screen, shell=True)
-    command_sound_post_snooze_process = mp.Process(name='pomodoro_sound_post_snooze', target=command_sound_post_snooze)
-    command_sound_post_snooze_process.start()
-
-
-def command_sound_post_snooze():
+def command_sound_post_snooze(interprocess_dict):
+    # WARNING: Please increase the sleep timeout to a value larger than `SNOOZE_MINS`.
+    # No sound will play if system is sleeping.
+    # sudo pmset -a sleep 20
     setproctitle.setproctitle(mp.current_process().name)
     wait_for_secs(SNOOZE_MINS*60)
-    for i in range(10):
-        subprocess.run(cmd_sound_post_snooze, shell=True)
-        wait_for_secs(1)  
+    store_current_volume(interprocess_dict)
+    set_volume_to_max()
+    for i in range(5):
+        exec_command(cmd_sound_post_snooze)
+        wait_for_secs(1)
+    restore_volume(interprocess_dict)
+
+
+def command_screen_off(interprocess_dict):
+    setproctitle.setproctitle(mp.current_process().name)
+    wait_for_secs(SCREEN_OFF_SECONDS)
+    logging.debug('Screen turned off forcefully!')
+    subprocess.run(cmd_screen, shell=True)
+    command_sound_post_snooze_process = mp.Process(name='pomodoro_sound_post_snooze', target=command_sound_post_snooze, args=(interprocess_dict,))
+    command_sound_post_snooze_process.start()
+    logging.debug('Started pomodoro_sound_post_snooze')
 
 
 def process_result(res):
@@ -90,7 +100,7 @@ def process_result(res):
     return wait_time_mins
 
 
-def start_main_loop():
+def start_main_loop(interprocess_dict):
     setproctitle.setproctitle(mp.current_process().name)
     logging.debug('Main loop process started.')
     wait_time_mins = MAIN_LOOP_MINS
@@ -99,7 +109,7 @@ def start_main_loop():
         command_make_sound_process = mp.Process(name='pomodoro_make_sound', target=command_make_sound)
         command_make_sound_process.start()
         # Just comment these 2 lines if you dont want the screen to be turned off.
-        command_screen_off_process = mp.Process(name='pomodoro_screen_off', target=command_screen_off)
+        command_screen_off_process = mp.Process(name='pomodoro_screen_off', target=command_screen_off, args=(interprocess_dict,))
         command_screen_off_process.start()
         res = subprocess.run(cmd_dialog, shell=True, capture_output=True)
         command_make_sound_process.terminate()
