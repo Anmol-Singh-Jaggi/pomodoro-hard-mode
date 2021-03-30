@@ -24,7 +24,7 @@ def get_process_id(process_name, ignore_error=False):
     if ret_code != 0 or not stdout:
         msg = 'Unable to find process ID for "{}": {}'.format(process_name, res)
         if ignore_error:
-            #logging.info(msg)
+            logging.debug(msg)
             pass
         else:
             logging.error(msg)

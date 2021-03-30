@@ -21,6 +21,9 @@ def store_current_volume(interprocess_dict):
     if ret == 0:
         current_volume = stdout.split(",")[0].split(":")[1].strip()
         interprocess_dict['current_volume'] = current_volume
+        logging.debug('Stored current volume = ' + str(current_volume))
+    else:
+        logging.error('Error in retrieving current volume ' + str(res))
 
 
 def set_volume_to_max():
@@ -36,4 +39,5 @@ def restore_volume(interprocess_dict):
     current_volume_rounded = round(int(current_volume)/10)
     cmd = get_set_volume_cmd_string(current_volume_rounded)
     exec_command(cmd, False, False)
+    logging.debug('Setting current_volume to None from ' + str(current_volume))
     interprocess_dict['current_volume'] = None
