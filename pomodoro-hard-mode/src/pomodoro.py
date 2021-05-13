@@ -6,12 +6,13 @@ nohup python3 pomodoro.py &!
 import multiprocessing as mp
 from threading import Event
 import logging
-logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d:%H:%M:%S', level=logging.DEBUG)
 
 import setproctitle
 
 from screen_state_observer import start_screen_state_observer
 from main_loop import start_main_loop
+
+logging.basicConfig(format='%(asctime)s %(levelname)-8s [%(filename)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d:%H:%M:%S', level=logging.DEBUG)
 
 
 def main():

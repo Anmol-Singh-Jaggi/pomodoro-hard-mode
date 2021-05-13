@@ -1,10 +1,8 @@
-#!/usr/bin/env python3
 import multiprocessing as mp
-import subprocess
 import logging
 import threading
 import time
-logging.basicConfig(format='%(levelname)s:%(process)d:%(asctime)s:::%(message)s', datefmt='%d-%b-%y_%H:%M:%S', level=logging.DEBUG)
+
 import Foundation
 import AppKit
 from PyObjCTools import AppHelper
@@ -34,7 +32,7 @@ class ScreenStateObserver(AppKit.NSObject):
             logging.debug('Starting main loop again')
             main_loop_process_id = get_process_id('pomodoro_main_loop', True)
             if main_loop_process_id or self.is_main_loop_on:
-                logging.error('Main loop already running with process id "{}"'.format(main_loop_process_id))
+                logging.error(f'Main loop already running with process id "{main_loop_process_id}"')
                 return
             main_loop_process = mp.Process(name='pomodoro_main_loop', target=start_main_loop, args=(self.interprocess_dict,))
             main_loop_process.start()

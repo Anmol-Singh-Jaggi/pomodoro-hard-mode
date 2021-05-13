@@ -1,13 +1,10 @@
-#!/usr/bin/env python3
 import logging
+
 from common_utils import exec_command
 
 
 def get_set_volume_cmd_string(new_volume):
-    sudo_passwd = get_sudo_password_from_file()
-    cmd = 'echo "{}" | sudo -S osascript -e "set Volume {}"'
-    cmd = cmd.format(sudo_passwd, new_volume)
-    return cmd
+    return f'source ~/.zshenv && echo "$PSWD" | sudo -S osascript -e "set Volume {new_volume}"'
 
 
 def get_sudo_password_from_file():
@@ -21,9 +18,9 @@ def store_current_volume(interprocess_dict):
     if ret == 0:
         current_volume = stdout.split(",")[0].split(":")[1].strip()
         interprocess_dict['current_volume'] = current_volume
-        logging.debug('Stored current volume = ' + str(current_volume))
+        logging.debug(f'Stored current volume in dict = {current_volume}')
     else:
-        logging.error('Error in retrieving current volume ' + str(res))
+        logging.error(f'Error in retrieving current volume: {res}')
 
 
 def set_volume_to_max():
@@ -34,10 +31,10 @@ def set_volume_to_max():
 def restore_volume(interprocess_dict):
     current_volume = interprocess_dict.get('current_volume', None)
     if current_volume is None:
-        logging.debug('current volume is none')
+        logging.debug('Current volume in dict is none')
         return
-    current_volume_rounded = round(int(current_volume)/10)
+    current_volume_rounded = round(int(current_volume) / 10)
     cmd = get_set_volume_cmd_string(current_volume_rounded)
     exec_command(cmd, False, False)
-    logging.debug('Setting current_volume to None from ' + str(current_volume))
+    logging.debug(f'Restored current volume to {current_volume}')
     interprocess_dict['current_volume'] = None

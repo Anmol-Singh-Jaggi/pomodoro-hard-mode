@@ -1,8 +1,4 @@
-#!/usr/bin/env python3
-import multiprocessing as mp
 import logging
-import time
-import threading
 import subprocess
 
 
@@ -12,17 +8,16 @@ def exec_command(cmd, ignore_error=True, stderr_fatal=True):
     stdout = res.stdout.decode('utf-8')
     stderr = res.stderr.decode('utf-8')
     if not ignore_error and (ret_code != 0 or (stderr_fatal and len(stderr) > 0)):
-        msg = 'Process exec failed for "{}": {}'.format(cmd, res)
-        logging.error(msg)
+        logging.error(f'Process exec failed for "{cmd}": {res}')
     return res.returncode, stdout, stderr
 
 
 def get_process_id(process_name, ignore_error=False):
-    cmd = "ps -ef | grep '{}' | grep -v grep | awk '{{print $2}}'".format(process_name)
+    cmd = f"ps -ef | grep '{process_name}' | grep -v grep | awk '{{print $2}}'"
     res = exec_command(cmd)
     ret_code, stdout, stderr = res
     if ret_code != 0 or not stdout:
-        msg = 'Unable to find process ID for "{}": {}'.format(process_name, res)
+        msg = f'Unable to find process ID for "{process_name}": {res}'
         if ignore_error:
             logging.debug(msg)
             pass
@@ -35,18 +30,14 @@ def get_process_id(process_name, ignore_error=False):
 def pkill(process_name, ignore_error=False):
     # For some reason the `pkill` command fails sometimes.
     # Hence first finding the process ID and then killing it using `kill`
-    logging.debug("Got request to kill '{}'".format(process_name))
+    logging.debug(f"Got request to kill '{process_name}'")
     process_id = get_process_id(process_name, ignore_error)
     if not process_id:
-        msg = 'Unable to kill "{}" as process ID is None'.format(process_name)
-        if ignore_error:
-            #logging.info(msg)
-            pass
-        else:
-            logging.error(msg)
+        if not ignore_error:
+            logging.error(f'Unable to kill "{process_name}" as process ID is None')
         return
     cmd = "kill " + process_id
-    logging.debug("Killing '{}' with id '{}'".format(process_name, process_id))
+    logging.debug(f"Killing '{process_name}' with id '{process_id}'")
     subprocess.run(cmd, shell=True, capture_output=True)
 
 

@@ -1,11 +1,9 @@
-#!/usr/bin/env python3
 import multiprocessing as mp
 import subprocess
 import time
 import os
 import signal
 import logging
-logging.basicConfig(format='%(levelname)s:%(process)d:%(asctime)s:::%(message)s', datefmt='%d-%b-%y_%H:%M:%S', level=logging.DEBUG)
 
 import setproctitle
 
@@ -14,25 +12,20 @@ from common_utils import kill_all, exec_command
 from volume_utils import store_current_volume, restore_volume, set_volume_to_max
 
 
-dialog_message = "Break!!"
-dialog_buttons = ["OK", "Snooze", "Finish"]
-dialog_button_default = 2 # Snooze
-
-cmd_dialog = "osascript -e 'tell app \"System Events\" to display dialog \"{}\" buttons {{\"{}\", \"{}\", \"{}\"}} default button {}'"
-cmd_dialog = cmd_dialog.format(dialog_message, *dialog_buttons, dialog_button_default)
+cmd_dialog = 'osascript -e \'tell app "System Events" to display dialog "Break!!" buttons {"OK", "Snooze", "Finish"} default button 2\''
 cmd_sound = "afplay /System/Library/Sounds/Tink.aiff"
 cmd_sound_post_snooze = "afplay /System/Library/Sounds/Glass.aiff"
 cmd_screen = "pmset displaysleepnow"
 
-MAIN_LOOP_MINS=25
-SNOOZE_MINS=5
-SCREEN_OFF_SECONDS=10
+MAIN_LOOP_MINS = 25
+SNOOZE_MINS = 5
+SCREEN_OFF_SECONDS = 10
 
 
 def wait_for_mins(mins):
-    statusbar_process = mp.Process(name='pomodoro_statusbar', target=display_status_bar, args = (mins,))
+    statusbar_process = mp.Process(name='pomodoro_statusbar', target=display_status_bar, args=(mins,))
     statusbar_process.start()
-    wait_for_secs(mins*60)
+    wait_for_secs(mins * 60)
     statusbar_process.terminate()
     statusbar_process.join()
 
@@ -46,7 +39,7 @@ def get_decreasing_seq():
     curr = 5
     while True:
         yield curr
-        curr = max(curr-1, minl)
+        curr = max(curr - 1, minl)
 
 
 def command_make_sound():
@@ -62,7 +55,7 @@ def command_sound_post_snooze(interprocess_dict):
     # No sound will play if system is sleeping.
     # sudo pmset -a sleep 20
     setproctitle.setproctitle(mp.current_process().name)
-    wait_for_secs(SNOOZE_MINS*60)
+    wait_for_secs(SNOOZE_MINS * 60)
     store_current_volume(interprocess_dict)
     set_volume_to_max()
     for i in range(5):
